@@ -1,7 +1,10 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { TaskModule } from './task/task.module';
 import configuration from './config/configuration';
+import { DatabaseModule } from './database/database.module';
+import { TasksModule } from './tasks/tasks.module';
+import { UsersModule } from './users/users.module';
+import { ResponseLogger } from './middleware/response-logger.middleware';
 
 @Module({
   imports: [
@@ -9,10 +12,17 @@ import configuration from './config/configuration';
       envFilePath: ['.env.shared', `.env.${process.env.NODE_ENV}`],
       load: [configuration],
       isGlobal: true,
+      expandVariables: true,
     }),
-    TaskModule,
+    DatabaseModule,
+    UsersModule,
+    TasksModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule {
+  configure(middlewareConsumer: MiddlewareConsumer) {
+    middlewareConsumer.apply(ResponseLogger).forRoutes('*');
+  }
+}
