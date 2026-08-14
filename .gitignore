@@ -1,0 +1,14 @@
+# dotenv environment variable files (compose variable substitution)
+.env
+.env.*.local
+
+# OS
+.DS_Store
+
+# IDEs and editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea

@@ -1,20 +1,23 @@
 import {
-  IsString,
+  IsDateString,
+  IsEnum,
+  IsInt,
   IsNotEmpty,
   IsOptional,
-  IsEnum,
-  IsDateString,
-  IsInt,
+  IsString,
   MinLength,
 } from 'class-validator';
+import { Trim } from '../../common/decorators/trim.decorator';
 import { TaskStatus } from '../entities/task-status.enum';
 
 export class CreateTaskDto {
+  @Trim()
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
   title!: string;
 
+  @Trim()
   @IsString()
   @IsOptional()
   description?: string;
