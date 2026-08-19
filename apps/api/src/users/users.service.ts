@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -18,9 +19,14 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
+    // queryRunner is TypeORM's manual approach to running a SQL transaction:
+    // grab a dedicated connection, start the transaction, then explicitly
+    // commit on success or rollback on failure, always releasing after.
+    // Used here so the duplicate-name check and insert happen atomically -
+    // concurrent requests can't both pass the check and create duplicates.
     const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    await queryRunner.connect(); // acquire a connection from the pool
+    await queryRunner.startTransaction(); // BEGIN
 
     try {
       const { firstName, middleName, lastName } = createUserDto;
@@ -38,14 +44,17 @@ export class UsersService {
       const user = queryRunner.manager.create(User, createUserDto);
       await queryRunner.manager.save(User, user);
 
-      await queryRunner.commitTransaction();
+      await queryRunner.commitTransaction(); // COMMIT - persist the insert
       return user;
     } catch (error) {
-      await queryRunner.rollbackTransaction();
+      await queryRunner.rollbackTransaction(); // ROLLBACK - undo on failure
+      if (error instanceof HttpException) {
+        throw error;
+      }
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`I couldn't add this user: ${message}`);
     } finally {
-      await queryRunner.release();
+      await queryRunner.release(); // always return the connection to the pool
     }
   }
 

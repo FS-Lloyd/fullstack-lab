@@ -10,15 +10,18 @@ import {
   Post,
   Put,
   Query,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { PaginationDto } from '../common/dto/pagination.dto';
+import { LoggingInterceptor } from '../interceptors/logging.interceptor';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TasksService } from './tasks.service';
-import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('tasks')
+@UseInterceptors(LoggingInterceptor)
 export class TasksController {
   constructor(private readonly taskService: TasksService) {}
 

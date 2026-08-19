@@ -1,24 +1,26 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
   ParseIntPipe,
+  Patch,
+  Post,
   Query,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PaginationDto } from '../common/dto/pagination.dto';
+import { UsersService } from './users.service';
 
 @Controller('users')
+// @UseFilters(CustomExceptionFilter) -> Note: could scope this filter to just this Controller instead of applying it globally in main.ts
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  // @UseFilters(CustomExceptionFilter) -> Note: could scope this filter to just this method instead of applying it globally in main.ts
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }

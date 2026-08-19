@@ -1,10 +1,11 @@
-import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration';
 import { DatabaseModule } from './database/database.module';
+import { ResponseLogger } from './middleware/response-logger.middleware';
+import { ValidateContentTypeMiddleware } from './middleware/validate-content-type.middleware';
 import { TasksModule } from './tasks/tasks.module';
 import { UsersModule } from './users/users.module';
-import { ResponseLogger } from './middleware/response-logger.middleware';
 
 @Module({
   imports: [
@@ -19,10 +20,17 @@ import { ResponseLogger } from './middleware/response-logger.middleware';
     TasksModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    Logger,
+    // Disabled: registering LoggingInterceptor as APP_INTERCEPTOR would apply it globally to
+    // every route, wrapping all responses in the ApiResponse envelope. ResponseLogger below
+    // covers /tasks logging only; enable this once the envelope is rolled out API-wide.
+    // { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+  ],
 })
 export class AppModule {
   configure(middlewareConsumer: MiddlewareConsumer) {
-    middlewareConsumer.apply(ResponseLogger).forRoutes('*');
+    middlewareConsumer.apply(ValidateContentTypeMiddleware).forRoutes('*');
+    middlewareConsumer.apply(ResponseLogger).forRoutes('/tasks');
   }
 }

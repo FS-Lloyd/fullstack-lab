@@ -1,4 +1,4 @@
-import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 
 @Injectable()
@@ -13,12 +13,17 @@ export class ResponseLogger implements NestMiddleware {
     const { method, originalUrl } = req;
     const startTime = Date.now();
     res.on('finish', () => {
-      const { statusCode, statusMessage } = res;
+      const {
+        statusCode,
+        statusMessage,
+      }: { statusCode: HttpStatus; statusMessage: string } = res;
+
       const responseTime = Date.now() - startTime;
       this.logger.log(
         `${method} ${originalUrl} - ${statusCode} ${statusMessage} (${responseTime}ms)`,
       );
     });
+
     next();
   }
 }
