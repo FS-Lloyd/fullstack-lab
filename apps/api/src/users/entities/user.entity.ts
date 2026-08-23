@@ -22,6 +22,9 @@ export class User {
   @Column()
   lastName!: string;
 
+  @Column({ type: 'int', default: 0 })
+  taskCount!: number;
+
   @CreateDateColumn()
   createdAt!: Date;
 
