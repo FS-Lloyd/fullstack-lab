@@ -6,11 +6,14 @@ import { ResponseLogger } from './middleware/response-logger.middleware';
 import { ValidateContentTypeMiddleware } from './middleware/validate-content-type.middleware';
 import { TasksModule } from './tasks/tasks.module';
 import { UsersModule } from './users/users.module';
+import { HealthModule } from './health/health.module';
+
+const nodeEnv = process.env.NODE_ENV ?? 'development';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: ['.env.shared', `.env.${process.env.NODE_ENV}`],
+      envFilePath: ['.env.shared', `.env.${nodeEnv}`],
       load: [configuration],
       isGlobal: true,
       expandVariables: true,
@@ -18,6 +21,7 @@ import { UsersModule } from './users/users.module';
     DatabaseModule,
     UsersModule,
     TasksModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [

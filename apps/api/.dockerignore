@@ -13,4 +13,12 @@ coverage
 test
 *.spec.ts
 .env
+.env.local
+.env.development
+.env.development.local
+.env.staging
+.env.staging.local
+.env.production.local
 .env.*.local
+# .env.shared and .env.production are intentionally NOT excluded —
+# the Dockerfile explicitly COPYs them into the production image.

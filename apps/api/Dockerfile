@@ -24,4 +24,6 @@ COPY --chown=node:node .env.shared .env.production ./
 
 USER node
 EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD wget --quiet --tries=1 --spider "http://localhost:${PORT:-3000}/health" || exit 1
 CMD ["sh", "-c", "npm run migration:run:prod && node dist/main"]
