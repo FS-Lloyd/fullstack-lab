@@ -13,6 +13,10 @@ export interface Task {
 export type CreateTaskInput = Pick<Task, "title"> &
   Partial<Pick<Task, "description" | "status" | "dueDate">>;
 
+export type UpdateTaskInput = Partial<
+  Pick<Task, "title" | "description" | "status" | "dueDate">
+>;
+
 export class ApiError extends Error {
   readonly status: number;
 
@@ -21,6 +25,12 @@ export class ApiError extends Error {
     this.name = "ApiError";
     this.status = status;
   }
+}
+
+interface ApiEnvelope<T> {
+  statusCode: number;
+  timestamp: string;
+  data: T;
 }
 
 async function parseErrorMessage(res: Response): Promise<string> {
@@ -34,12 +44,17 @@ async function parseErrorMessage(res: Response): Promise<string> {
   return res.statusText || `Request failed with status ${res.status}`;
 }
 
+async function unwrap<T>(res: Response): Promise<T> {
+  const body = (await res.json()) as ApiEnvelope<T>;
+  return body.data;
+}
+
 export async function listTasks(): Promise<Task[]> {
   const res = await fetch("/api/tasks");
   if (!res.ok) {
     throw new ApiError(await parseErrorMessage(res), res.status);
   }
-  return res.json() as Promise<Task[]>;
+  return unwrap<Task[]>(res);
 }
 
 export async function createTask(input: CreateTaskInput): Promise<Task> {
@@ -51,5 +66,27 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
   if (!res.ok) {
     throw new ApiError(await parseErrorMessage(res), res.status);
   }
-  return res.json() as Promise<Task>;
+  return unwrap<Task>(res);
+}
+
+export async function updateTask(
+  id: number,
+  input: UpdateTaskInput,
+): Promise<Task> {
+  const res = await fetch(`/api/tasks/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new ApiError(await parseErrorMessage(res), res.status);
+  }
+  return unwrap<Task>(res);
+}
+
+export async function deleteTask(id: number): Promise<void> {
+  const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+  if (!res.ok) {
+    throw new ApiError(await parseErrorMessage(res), res.status);
+  }
 }
